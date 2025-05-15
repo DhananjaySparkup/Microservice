@@ -1,0 +1,12 @@
+# Example for auth-service
+FROM node:18
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm install
+
+EXPOSE 5003
+
+CMD ["npm", "start"]
