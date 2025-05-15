@@ -1,0 +1,14 @@
+{
+  "name": "callback-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "axios": "^1.5.0",
+    "dotenv": "^16.0.3",
+    "mongoose": "^7.2.1"
+  }
+}
