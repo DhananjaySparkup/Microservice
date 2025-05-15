@@ -1,9 +1,16 @@
-const express = require('express');
-const router = express.Router();
-const auth = require('../middleware/authMiddleware');
-const { assignService, calculateCharge } = require('../controllers/serviceController');
-
-router.post('/assign', auth, assignService);
-router.post('/calculate', calculateCharge);
-
-module.exports = router;
+module.exports = function parseSlabs(slabStr, amount) {
+    const slabs = slabStr.split('/');
+  
+    for (let slab of slabs) {
+      const [min, max, charge, unit] = slab.split('_');
+      const minVal = parseFloat(min);
+      const maxVal = parseFloat(max);
+      const rate = parseFloat(charge);
+  
+      if (amount >= minVal && amount <= maxVal) {
+        return unit.includes('%') ? (amount * rate) / 100 : rate;
+      }
+    }
+  
+    return null;
+  };  
