@@ -1,0 +1,97 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - '5001:5001'
+    depends_on:
+      - mongo
+
+  user-service:
+    build: ./user-service
+    ports:
+      - '5002:5002'
+    depends_on:
+      - mongo
+
+  wallet-service:
+    build: ./wallet-service
+    ports:
+      - '5003:5003'
+    depends_on:
+      - mongo
+
+  service-charge-service:
+    build: ./service-charge-service
+    ports:
+      - '5004:5004'
+    depends_on:
+      - mongo
+
+  transaction-service:
+    build: ./transaction-service
+    ports:
+      - '5005:5005'
+    depends_on:
+      - service-charge-service
+    env_file: ./transaction-service/.env
+
+  queue-service:
+    build: ./queue-service
+    depends_on:
+      - rabbitmq
+      - dummy-bank-api
+      - mongo
+    restart: always
+
+
+  dummy-bank-api:
+    build: ./dummy-bank-api
+    ports:
+      - '5008:5008'
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - '5000:5000'
+    depends_on:
+      - auth-service
+      - user-service
+      - wallet-service
+      - service-charge-service
+      - transaction-service
+      
+  status-check-service:
+    build: ./status-check-service
+    depends_on:
+      - rabbitmq
+      - mongo
+    env_file: ./status-check-service/.env
+    restart: always
+
+  callback-service:
+    build: ./callback-service
+    depends_on:
+      - rabbitmq
+      - mongo
+    env_file: ./callback-service/.env
+    restart: always
+
+
+volumes:
+  mongo_data:
