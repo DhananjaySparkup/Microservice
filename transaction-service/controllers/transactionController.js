@@ -13,16 +13,28 @@ exports.createTransaction = async (req, res) => {
     const { data } = await axios.post(process.env.SERVICE_CHARGE_URL, {
       userId, serviceId, amount
     });
+    
+    // if (!data.valid) {
+    //   return res.status(422).json({ message: 'Service not assigned to user' });
+    // }
+
     console.log("Data - ",data);
     
     const serviceCharge = data.serviceCharge;
     const gst = +(serviceCharge * 0.18).toFixed(2);
     const total = amount + serviceCharge + gst;
-
+    
+    console.log("Total -",total)
     // Connect to user's wallet DB
     const userDB = await connectUserDB(userId);
     const Wallet = userDB.model('Wallet', walletSchema);
     const wallet = await Wallet.findOne({ userId });
+    console.log("Wallet -",wallet);
+    
+
+    if (!wallet) {
+      return res.status(404).json({ message: 'Wallet not found' });
+    }
 
     const availableBalance = wallet.balance - wallet.hold;
     if (amount < wallet.minLimit || amount > wallet.maxLimit || availableBalance < total) {
@@ -31,6 +43,8 @@ exports.createTransaction = async (req, res) => {
 
     const prevBalance = wallet.balance;
     const updatedBalance = +(wallet.balance - total).toFixed(2);
+    wallet.balance = updatedBalance;
+    await wallet.save();
     console.log("Updated Balance -",updatedBalance);
     
 
