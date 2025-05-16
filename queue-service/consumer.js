@@ -33,7 +33,8 @@ const consume = async () => {
         const channel = await connection.createChannel();
         await channel.assertQueue('transaction_queue');
         await channel.assertQueue('status_check_queue');
-
+        
+        channel.prefetch(1);
         console.log("Listening to RabbitMQ queue 'transaction_queue'...");
 
         channel.consume('transaction_queue', async (msg) => {
@@ -48,7 +49,7 @@ const consume = async () => {
             const Wallet = userDB.model('Wallet', walletSchema);
             const wallet = await Wallet.findOne({ userId });
 
-            wallet.balance = +(wallet.balance - total).toFixed(2);
+            
             // await wallet.save();
 
             // Call Dummy Bank API
@@ -62,10 +63,12 @@ const consume = async () => {
 
             if(bankStatus=='Rejected'){
               await Transaction.findByIdAndUpdate(_id, { status: 'failed' });
-              wallet.balance += total; // refund
-              await wallet.save();
+              wallet.balance += total;
+              const refundedMoney = await wallet.save();
+              console.log("Wallet Balance after rejected -",wallet.balance)
               console.log(`Transaction ${_id} rejected. Amount refunded.`);
             } else if(bankStatus=='Accepted'){
+                wallet.balance = +(wallet.balance - total).toFixed(2);
                 await Transaction.findByIdAndUpdate(_id, { status: 'accepted' });
                 console.log(`Transaction ${_id} accepted. Forwarding to status_check_queue...`);
                 channel.sendToQueue('status_check_queue', Buffer.from(JSON.stringify(txn)));
