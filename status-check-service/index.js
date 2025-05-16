@@ -54,9 +54,11 @@ const consumeStatusCheck = async () => {
       await Transaction.findByIdAndUpdate(_id, { status: 'success' });
       channel.sendToQueue('callback_queue', Buffer.from(JSON.stringify({ _id, userId })));
     } else if (status === 'fail') {
+       
       await Transaction.findByIdAndUpdate(_id, { status: 'failed' });
       wallet.balance += total;
       await wallet.save();
+      console.log("Get-Wallet Balance",wallet.balance);
       console.log(`Transaction ${_id} failed. Refunded ${total}.`);
     } else {
       // pending — requeue to simulate polling
