@@ -1,10 +1,6 @@
 const mongoose = require('mongoose');
 
-<<<<<<< HEAD
-const dbCache = new Map(); // safer than plain object
-=======
 const dbCache = new Map();
->>>>>>> 137d4d6a3813b89531af016fd38b33075f57a68b
 const options = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
