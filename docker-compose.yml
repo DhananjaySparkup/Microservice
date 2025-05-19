@@ -51,13 +51,23 @@ services:
       - service-charge-service
     env_file: ./transaction-service/.env
 
+  transaction-send-service:
+    build: ./transaction-send-service
+    ports:
+      - '5006:5006'
+    depends_on:
+      - rabbitmq
+    env_file: ./transaction-send-service/.env
+    restart: always
+
   queue-service:
     build: ./queue-service
     depends_on:
       - rabbitmq
       - dummy-bank-api
       - mongo
-    restart: always
+    # restart: always
+    env_file: ./queue-service/.env
 
 
   dummy-bank-api:
