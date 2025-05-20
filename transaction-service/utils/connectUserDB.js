@@ -1,9 +1,9 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const dbCache = {};
 const options = {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
 };
 
 const connectUserDB = async (userId) => {
@@ -14,11 +14,11 @@ const connectUserDB = async (userId) => {
 
   // Wait until connected
   await new Promise((resolve, reject) => {
-    conn.once('connected', () => {
+    conn.once("connected", () => {
       console.log(`[Mongo] Connected to user DB: ${userId}`);
       resolve();
     });
-    conn.on('error', (err) => {
+    conn.on("error", (err) => {
       console.error(`[Mongo] Error connecting to user DB ${userId}:`, err);
       reject(err);
     });
